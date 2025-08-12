@@ -1,2 +1,2 @@
 # TwitterAnalyzer
-Extract most Used Hashtags + most active Users
+Extract most Used Hashtags + most active Users from Twitter / X
