@@ -11,7 +11,7 @@ uv pip install -r requirements.txt
 3. Twitter API Schlüssel in `config.json` hinterlegen (siehe `config.example.json`).
 
 ## Verwendung
-Das Skript `main.py` ruft Tweets ab, bereinigt sie und führt die Themenanalyse durch. Ergebnisse werden in `data/` abgelegt.
+Das Skript `main.py` ruft Tweets ab, bereinigt sie und führt die Themenanalyse durch. Ergebnisse werden in `data/` abgelegt.  
 Um das Skript auszuführen, muss in der zuvor aktivierten .venv das Skript ausgeführt werden: ```python .\main.py ```
 
 ## Struktur
