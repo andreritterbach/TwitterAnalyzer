@@ -12,8 +12,9 @@ uv pip install -r requirements.txt
 
 ## Verwendung
 Das Skript `main.py` ruft Tweets ab, bereinigt sie und führt die Themenanalyse durch. Ergebnisse werden in `data/` abgelegt.
+Um das Skript auszuführen, muss in der zuvor aktivierten .venv das Skript ausgeführt werden: ```python .\main.py ```
 
 ## Struktur
 - `main.py` – Hauptskript für die Analyse
 - `requirements.txt` – alle nötigen Bibliotheken
-- `data/` – Zwischendaten und Exporte
+- `data/` – Zwischenspeicher für Tweets und optionale Visualisierung
