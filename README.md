@@ -4,8 +4,8 @@ Dieses Projekt analysiert und extrahiert die fünf häufigsten Themen aus Twitte
 
 ## Installation und Setup
 1. Umgebung vorbereiten:
-   a) uv venv .venv
-   b) .venv\Scripts\activate 
+    - uv venv .venv
+    - .venv\Scripts\activate 
 2. Bibliotheken installieren:
 uv pip install -r requirements.txt
 3. Twitter API Schlüssel in `config.json` hinterlegen (siehe `config.example.json`).
