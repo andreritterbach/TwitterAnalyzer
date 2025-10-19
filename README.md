@@ -26,3 +26,4 @@ Um das Skript auszuführen, muss in der zuvor aktivierten .venv das Skript ausge
 - `main.py` – Hauptskript für die Analyse
 - `requirements.txt` – Hier sind alle benötigten Ressourcen für das Hauptskript hinterlegt
 - `data/` – Zwischenspeicher für Tweets und optionale Visualisierung
+- `config.example.json` - Enthält die Beispiel Konfiguration für den Twitter/X API-Token

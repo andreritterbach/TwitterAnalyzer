@@ -1,7 +1,4 @@
-numpy
-pandas
 scikit-learn
 nltk
 matplotlib
 tweepy
-uv
