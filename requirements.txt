@@ -2,3 +2,5 @@ scikit-learn
 nltk
 matplotlib
 tweepy
+gensim
+numpy
