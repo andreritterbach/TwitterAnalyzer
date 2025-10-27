@@ -14,10 +14,10 @@ from gensim.corpora import Dictionary
 
 # Einstellungen
 DATA_PATH = "data/tweets.csv"
-JSON_PATH = "data/tweets.json"
-CONFIG_PATH = "config.json"
+JSON_PATH = "data/tweets.json" # Pfad zu Tweets welche als JSON abgespeichert wurden
+CONFIG_PATH = "config.json" # Datei in welcher der Bearer Token hinterlegt wird
 
-if __name__ == '__main__':
+if __name__ == '__main__': # Muss bei Windows verwendet werden, da ansonsten Code rekursiv ausgeführt wird und zu einer Schleife führt
     # Authentifizierung
     with open(CONFIG_PATH) as f:
         config = json.load(f)
@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
     cleaned_tweets = [preprocess(t) for t in tweets]
 
-    # Tokenisierte Tweets für Gensim (wichtig für Coherence-Berechnung)
+    # Tokenisierte Tweets für Gensim (wichtig für Coherence-Berechnung, da diese eine Liste von Token benötigt und keinen String)
     def preprocess_for_gensim(tweet):
         tokens = tokenizer.tokenize(tweet)
         return [t for t in tokens if t.isalpha() and t not in stop_words]
@@ -196,7 +196,7 @@ if __name__ == '__main__':
 
     # Coherence Scores für verschiedene Topic-Anzahlen berechnen
     print("\n Coherence Score Analyse")
-    k_values = range(2, 16)  # Teste 2 bis 15 Topics
+    k_values = range(2, 6)  # Teste 2 bis 6 Topics
     coherence_scores = compute_coherence_values(
         tokenized_tweets, 
         gensim_dictionary, 
@@ -219,18 +219,20 @@ if __name__ == '__main__':
     plt.legend()
     plt.tight_layout()
     plt.savefig("data/coherence_elbow.png", dpi=300)
-    plt.show()
+    plt.show(block=False)
 
     # Finales LDA-Modell mit optimaler Topic-Anzahl trainieren
     print(f"\n Trainiere finales LDA-Modell mit {optimal_k} Topics")
     lda_final = LatentDirichletAllocation(
         n_components=optimal_k, 
         random_state=42,
-        max_iter=20,  # Mehr Iterationen für finales Modell
+        max_iter=20,
         learning_method='online'
     )
     lda_final.fit(tfidf_matrix)
 
+    feature_names = tfidf.get_feature_names_out()
+    # Ausgabe der Top 10 Wörter
     def print_top_words(model, feature_names, n_top_words=10):
         for ix, topic in enumerate(model.components_):
             top = [feature_names[i] for i in topic.argsort()[:-n_top_words-1:-1]]
@@ -239,12 +241,33 @@ if __name__ == '__main__':
     print("\n Top-Begriffe der extrahierten Themen (Optimales LDA-Modell):")
     print_top_words(lda_final, tfidf.get_feature_names_out())
 
-    # Visualisierung der finalen Themenverteilung
-    plt.figure(figsize=(10, 6))
-    plt.bar([f"Thema {i+1}" for i in range(optimal_k)], lda_final.components_.sum(axis=1))
-    plt.ylabel("Summe der TF-IDF Gewichte")
-    plt.title(f"Häufigkeiten der {optimal_k} Themen in Düsseldorf & NRW Tweets")
-    plt.xticks(rotation=45)
+      #  Topic-Labels generieren
+    def generate_topic_labels(model, feature_names, n_top_words=3):
+        """Generiert Labels für Topics"""
+        labels = {}
+        for ix, topic in enumerate(model.components_):
+            top_indices = topic.argsort()[-n_top_words:][::-1]
+            top_words = [feature_names[i] for i in top_indices]
+            labels[ix] = " / ".join(top_words)
+        return labels
+    
+    topic_labels = generate_topic_labels(lda_final, feature_names, n_top_words=3)
+    
+    # === Output mit Labels ===
+    print("\n Topics mit automatischen Labels \n")
+    for topic_id, label in topic_labels.items():
+        print(f" Thema {topic_id + 1}: {label.upper()}")
+    
+    plt.figure(figsize=(12, 6))
+    
+    # Labels für x-Achse
+    x_labels = [f"Thema {i+1}\n({topic_labels[i]})" for i in range(optimal_k)]
+    
+    plt.bar(x_labels, lda_final.components_.sum(axis=1), color='steelblue')
+    plt.ylabel("Summe der TF-IDF Gewichte", fontsize=12)
+    plt.title(f"Häufigkeiten der {optimal_k} Themen in Düsseldorf & NRW Tweets", fontsize=14)
+    plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
-    plt.savefig("data/themenverteilung_optimal.png", dpi=300)
-    plt.show()
+    plt.savefig("data/themenverteilung_mit_labels.png", dpi=300)
+    plt.show(block=False)
+    plt.show() # wird benötigt damit die mit Matplotlib erstellten Bilder geöffnet bleiben, bis sie geschlossen wurden
