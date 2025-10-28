@@ -4,7 +4,9 @@ import csv
 import tweepy
 import numpy as np
 import nltk
-nltk.download('stopwords')
+import matplotlib
+from matplotlib.backends import backend_registry, BackendFilter
+nltk.download('stopwords', quiet=True)
 from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
@@ -15,7 +17,7 @@ from gensim.models.coherencemodel import CoherenceModel
 from gensim.corpora import Dictionary
 
 # Einstellungen
-DATA_PATH = "data/tweets.csv"
+DATA_PATH = "data/tweets.csv" # Pfad zu Tweets die in CSV für weitere Verarbeitung zwischengespeichert werden
 JSON_PATH = "data/tweets.json" # Pfad zu Tweets welche als JSON abgespeichert wurden
 CONFIG_PATH = "config.json" # Datei in welcher der Bearer Token hinterlegt wird
 
@@ -95,15 +97,15 @@ if __name__ == '__main__': # Muss bei Windows verwendet werden, da ansonsten Cod
     hashtags = extract_hashtags(tweets_data)
     user_mentions_counter, user_retweets_counter = extract_active_users(tweets_data)
 
-    print("\n Top 5 Hashtags:")
+    print("\nTop 5 Hashtags:")
     for tag, count in Counter(hashtags).most_common(5):
         print(f"#{tag}: {count}")
 
-    print("\n Top 5 Nutzer-Mentions:")
+    print("\nTop 5 Nutzer-Mentions:")
     for user, count in user_mentions_counter.most_common(5):
         print(f"@{user}: {count}")
 
-    print("\n Top 5 User nach Retweet-Zahlen:")
+    print("\nTop 5 User nach Retweet-Zahlen:")
     for user_id, rt_count in user_retweets_counter.most_common(5):
         print(f"User {user_id}: {rt_count} Retweets")
 
@@ -197,7 +199,7 @@ if __name__ == '__main__': # Muss bei Windows verwendet werden, da ansonsten Cod
         return coherence_values
 
     # Coherence Scores für verschiedene Topic-Anzahlen berechnen
-    print("\n Coherence Score Analyse")
+    print("\nCoherence Score Analyse")
     k_values = range(2, 6)  # Teste 2 bis 6 Topics
     coherence_scores = compute_coherence_values(
         tokenized_tweets, 
@@ -208,7 +210,7 @@ if __name__ == '__main__': # Muss bei Windows verwendet werden, da ansonsten Cod
 
     # Optimale Anzahl finden
     optimal_k = k_values[np.argmax(coherence_scores)]
-    print(f"\n Optimale Anzahl Topics: {optimal_k} (Coherence: {max(coherence_scores):.4f})")
+    print(f"\nOptimale Anzahl Topics: {optimal_k} (Coherence: {max(coherence_scores):.4f})")
 
     # Visualisierung der Coherence Scores (Elbow-Methode)
     plt.figure(figsize=(12, 6))
@@ -221,10 +223,14 @@ if __name__ == '__main__': # Muss bei Windows verwendet werden, da ansonsten Cod
     plt.legend()
     plt.tight_layout()
     plt.savefig("data/coherence_elbow.png", dpi=300)
-    plt.show(block=False)
+    interactive_backends = backend_registry.list_builtin(BackendFilter.INTERACTIVE) #Überprüft ob der Code in einer Interaktiven Umgebung ausgeführt wird und gibt die Zeichnung aus.
+    if matplotlib.get_backend() in interactive_backends:
+         plt.show(block=False)
+    else:
+        print(f"\nDas Bild des Coherence Elbow wurde unter data/coherence_elbow.png gespeichert. Bitte per Bildbetrachter öffnen.")
 
     # Finales LDA-Modell mit optimaler Topic-Anzahl trainieren
-    print(f"\n Trainiere finales LDA-Modell mit {optimal_k} Topics")
+    print(f"\nTrainiere finales LDA-Modell mit {optimal_k} Topics")
     lda_final = LatentDirichletAllocation(
         n_components=optimal_k, 
         random_state=42,
@@ -240,12 +246,11 @@ if __name__ == '__main__': # Muss bei Windows verwendet werden, da ansonsten Cod
             top = [feature_names[i] for i in topic.argsort()[:-n_top_words-1:-1]]
             print(f"Thema #{ix+1}: {', '.join(top)}")
 
-    print("\n Top-Begriffe der extrahierten Themen (Optimales LDA-Modell):")
+    print("\nTop-Begriffe der extrahierten Themen (Optimales LDA-Modell):")
     print_top_words(lda_final, tfidf.get_feature_names_out())
 
       #  Topic-Labels generieren
     def generate_topic_labels(model, feature_names, n_top_words=3):
-        """Generiert Labels für Topics"""
         labels = {}
         for ix, topic in enumerate(model.components_):
             top_indices = topic.argsort()[-n_top_words:][::-1]
@@ -255,10 +260,10 @@ if __name__ == '__main__': # Muss bei Windows verwendet werden, da ansonsten Cod
     
     topic_labels = generate_topic_labels(lda_final, feature_names, n_top_words=3)
     
-    # === Output mit Labels ===
-    print("\n Topics mit automatischen Labels \n")
+    # Output mit Labels
+    print("\nTopics mit automatischen Labels \n")
     for topic_id, label in topic_labels.items():
-        print(f" Thema {topic_id + 1}: {label.upper()}")
+        print(f"Thema {topic_id + 1}: {label.upper()}")
     
     plt.figure(figsize=(12, 6))
     
@@ -271,5 +276,9 @@ if __name__ == '__main__': # Muss bei Windows verwendet werden, da ansonsten Cod
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
     plt.savefig("data/themenverteilung_mit_labels.png", dpi=300)
-    plt.show(block=False)
-    plt.show() # wird benötigt damit die mit Matplotlib erstellten Bilder geöffnet bleiben, bis sie geschlossen wurden
+    if matplotlib.get_backend() in interactive_backends:
+         plt.show(block=False)
+    else:
+        print(f"\nDas Bild der Themenverteilung mit den generierten Labels wurde unter data/themenverteilung_mit_labels.png gespeichert. Bitte per Bildbetrachter öffnen.")
+    if matplotlib.get_backend() in interactive_backends:  
+        plt.show() # wird benötigt damit die mit Matplotlib erstellten Bilder geöffnet bleiben, bis sie geschlossen wurden
