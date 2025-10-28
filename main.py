@@ -3,6 +3,8 @@ import json
 import csv
 import tweepy
 import numpy as np
+import nltk
+nltk.download('stopwords')
 from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
