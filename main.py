@@ -6,7 +6,6 @@ import numpy as np
 import nltk
 import matplotlib
 from matplotlib.backends import backend_registry, BackendFilter
-nltk.download('stopwords', quiet=True)
 from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
@@ -15,6 +14,7 @@ import matplotlib.pyplot as plt
 from collections import Counter
 from gensim.models.coherencemodel import CoherenceModel
 from gensim.corpora import Dictionary
+nltk.download('stopwords', quiet=True)
 
 # Einstellungen
 DATA_PATH = "data/tweets.csv" # Pfad zu Tweets die in CSV für weitere Verarbeitung zwischengespeichert werden
